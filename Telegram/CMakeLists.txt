@@ -7,6 +7,18 @@
 add_executable(Telegram WIN32 MACOSX_BUNDLE)
 init_non_host_target(Telegram)
 
+if (MSVC AND CMAKE_GENERATOR MATCHES "Visual Studio")
+    set(TDESKTOP_WINDOWS_LINKER "" CACHE FILEPATH "Optional linker executable for Telegram.")
+    if (TDESKTOP_WINDOWS_LINKER)
+        get_filename_component(linker_name "${TDESKTOP_WINDOWS_LINKER}" NAME)
+        get_filename_component(linker_path "${TDESKTOP_WINDOWS_LINKER}" DIRECTORY)
+        set_target_properties(Telegram PROPERTIES
+            VS_GLOBAL_LinkToolExe "${linker_name}"
+            VS_GLOBAL_LinkToolPath "${linker_path}"
+        )
+    endif()
+endif()
+
 add_subdirectory(lib_rpl)
 add_subdirectory(lib_crl)
 add_subdirectory(lib_base)
@@ -76,7 +88,6 @@ PRIVATE
     tdesktop::td_webauthn
     desktop-app::lib_webrtc
     desktop-app::lib_base
-    desktop-app::lib_crl
     desktop-app::lib_ui
     desktop-app::lib_tl
     desktop-app::lib_spellcheck

@@ -1,0 +1,46 @@
+diff --git a/options_win.cmake b/options_win.cmake
+index dd86342..e218869 100644
+--- a/options_win.cmake
++++ b/options_win.cmake
+@@ -25,13 +25,14 @@ INTERFACE
+     _UNICODE
+ )
+ if (MSVC)
++    option(DESKTOP_APP_RELEASE_PDB "Generate linker debug symbols in Release builds." ON)
+     target_compile_options(common_options
+     INTERFACE
+         /permissive-
+         # /Qspectre
+         /utf-8
+         /W4
+-        /MP     # Enable multi process build.
++        /MP2    # Limit concurrent PCH copies to fit memory on 16 GB machines.
+         /EHsc   # Catch C++ exceptions only, extern C functions never throw a C++ exception.
+         /w15038 # wrong initialization order
+         /w14265 # class has virtual functions, but destructor is not virtual
+@@ -65,7 +66,7 @@ if (MSVC)
+     INTERFACE
+         $<$<CONFIG:Debug>:/NODEFAULTLIB:LIBCMT>
+         $<$<AND:$<CONFIG:Debug>,$<OR:$<BOOL:${build_win64}>,$<BOOL:${build_winarm}>>>:/DEBUG:FASTLINK>
+-        $<$<NOT:$<AND:$<CONFIG:Debug>,$<OR:$<BOOL:${build_win64}>,$<BOOL:${build_winarm}>>>>:$<IF:$<BOOL:$<GENEX_EVAL:$<TARGET_PROPERTY:MSVC_DEBUG_INFORMATION_FORMAT>>>,/DEBUG,/DEBUG:NONE>>
++        $<$<NOT:$<AND:$<CONFIG:Debug>,$<OR:$<BOOL:${build_win64}>,$<BOOL:${build_winarm}>>>>:$<IF:$<BOOL:$<GENEX_EVAL:$<TARGET_PROPERTY:MSVC_DEBUG_INFORMATION_FORMAT>>>,$<IF:$<AND:$<CONFIG:Release>,$<NOT:$<BOOL:${DESKTOP_APP_RELEASE_PDB}>>>,/DEBUG:NONE,/DEBUG>,/DEBUG:NONE>>
+         $<$<NOT:$<CONFIG:Debug>>:/OPT:REF>
+         /INCREMENTAL:NO
+         /DEPENDENTLOADFLAG:0x800
+diff --git a/run_cmake.py b/run_cmake.py
+index 6e00fb4..e92e8cc 100644
+--- a/run_cmake.py
++++ b/run_cmake.py
+@@ -25,12 +25,10 @@ def run(project, arguments, buildType=''):
+     if sys.platform == 'win32' and not explicitGenerator:
+         if vsArch == 'x64':
+             cmake.append('-Ax64')
+-            cmake.append('-T v143')
+         elif vsArch == 'arm':
+             cmake.append('-AARM64')
+         else:
+             cmake.append('-AWin32') # default
+-            cmake.append('-T v143')
+     elif vsArch != '':
+         print("[ERROR] x86/x64/arm switch is supported only with Visual Studio.")
+         return 1
