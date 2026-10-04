@@ -1,3 +1,18 @@
+diff --git a/external/qt/qt_static_plugins/kimageformats/CMakeLists.txt b/external/qt/qt_static_plugins/kimageformats/CMakeLists.txt
+index 81d58bd..5dedc3a 100644
+--- a/external/qt/qt_static_plugins/kimageformats/CMakeLists.txt
++++ b/external/qt/qt_static_plugins/kimageformats/CMakeLists.txt
+@@ -80,6 +80,10 @@ elseif (WIN32)
+     PRIVATE
+         ${libs_loc}/libavif/$<IF:$<CONFIG:Debug>,Debug,Release>/avif.lib
+         ${libs_loc}/libheif/libheif/$<IF:$<CONFIG:Debug>,Debug,Release>/heif.lib
++        # Local libheif is still built with the libde265 HEVC decoder plugin,
++        # so keep linking libde265 (upstream moved to FFmpeg for HEVC). Kept in
++        # patches/cmake-local-build.patch so it survives submodule updates.
++        ${libs_loc}/libde265/libde265/$<IF:$<CONFIG:Debug>,Debug,Release>/libde265.lib
+         desktop-app::external_ffmpeg
+         ${libs_loc}/dav1d/builddir-$<IF:$<CONFIG:Debug>,debug,release>/src/libdav1d.a
+         ${libs_loc}/libjxl/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/jxl.lib
 diff --git a/options_win.cmake b/options_win.cmake
 index dd86342..e218869 100644
 --- a/options_win.cmake
